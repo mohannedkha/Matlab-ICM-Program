@@ -1,42 +1,42 @@
-%  This File will be used as a main file to call the Three functions and use
-%  them to calculate the solution of the differential equation, the outputs
-%  of this code is a graph containing a 6 plots each one of them
-%  representing a step size, also, a table result for each step size and the error for each method. 
+%===========================================================
+% Comparison between Euler method and the analytical Solution 
+%===========================================================
+
+%===========================================================
 
 % Initial Conditions
-xinit = 0;
-yinit = 1;
-xfinal = 10;
 
-% Six step sizes to show the different between each method.
-n = [5,10,20,30,50,100];
+ts =[0 10];
+z0 = [0 1];
+h = [0.005 0.01 0.05 0.1];
 
-% To maximize the figures automaticly
-f = figure('WindowState','maximized');
-pause(0.05);
+% To find the exact solution
+syms x(t) y(t)
+eqn1 = diff(x,t) == x-y+1;
+eqn2 = diff(y,t) == x+3*y+exp(-t);
+inits = [x(0) == 0, y(0) == 1];
+[x_exact,y_exact] = dsolve(eqn1,eqn2,inits);
 
-
-% This for loop will plot each step size on a different subplot.
-for i= 1:6
-    h=(xfinal-xinit)/n(i);
-    [x,y_euler_forward] = euler_forward(xinit,yinit,xfinal,n(i));
-    [x,y_euler_modified] = euler_modified(xinit,yinit,xfinal,n(i));
-    [x,y_euler_backward] = euler_backward(xinit,yinit,xfinal,n(i));
-    exact_solution = sqrt(x.^2+1);
-    Results_table = table(x,y_euler_forward,y_euler_backward,y_euler_modified,exact_solution) % to create a result table for each run.
-    subplot(3,2,i), plot(x,exact_solution,'-.k', x,y_euler_forward,'r',x,y_euler_modified,'g',x,y_euler_backward,'b');
-    legend ('Exact Solution','Euler Forward','Euler Modified','Euler Backward','Location','northwest','NumColumns',1);
-    xlabel('x');
-    ylabel('y(x)');
-    title(['Numerical Solution vs Exact in ',num2str(n(i)),' iterations']);
-    
-    %Error Calculations
-    euler_forward_Error = (exact_solution(end)-y_euler_forward(end))/exact_solution(end)*100;
-    euler_modified_Error = (exact_solution(end)-y_euler_modified(end))/exact_solution(end)*100;
-    euler_backward_Error = (exact_solution(end)-y_euler_backward(end))/exact_solution(end)*100;
-    Error_Table= table(h,euler_forward_Error,euler_modified_Error,euler_backward_Error) % to create an error table for each run.
-    end
-sgt = sgtitle('Solution of dy/dx = x/y in different methods','Color','Black');
-sgt.FontSize = 20;
-
-
+% Plotting
+for i = 1:4
+    [t,z] = Euler_System(ts,z0,h(i));
+    figure(1);
+    hold on
+    plot(t,eval(vectorize(x_exact)),t,z(1,:));% eval will create data points using t on the exact solution as a vector size.
+    xlabel('t');
+    ylabel('x(t)');
+    title('x vs t in ');
+    legend('Exact Solution','Euler Solution h =0.005','Euler Solution h =0.01','Euler Solution h =0.05','Euler Solution h =0.1','location','NorthWest')
+    grid on
+    hold off
+    figure(2);
+    hold on
+    plot(t,z(2,:));
+    plot(t,eval(vectorize(y_exact)),t,z(2,:));% eval will create data points using t on the exact solution as a vector size.
+    xlabel('t');
+    ylabel('y(t)');
+    title('y vs t');
+    hold off
+    legend('Exact Solution','Euler Solution h =0.005','Euler Solution h =0.01','Euler Solution h =0.05','Euler Solution h =0.1','location','NorthWest')
+    grid on
+end
